@@ -35,16 +35,8 @@ import utils.Transformacion;
  * @author Michael Andres Carrillo Pinzon 	-  201320.
  * @author José Miguel Suárez Lopera 		-  201510
  */
-public class Protocolo implements Runnable{
+public class Protocolo {
 
-	// ----------------------------------------------------
-	// Atributos del Servidor
-	// ----------------------------------------------------
-	private static Socket s;
-	// ----------------------------------------------------
-	// Atributos de medicion de Indicadores.
-	// ----------------------------------------------------
-	public static double iSession;
 	// ----------------------------------------------------
 	// CONSTANTES DE CONTROL DE IMPRESION EN CONSOLA
 	// ----------------------------------------------------
@@ -79,7 +71,6 @@ public class Protocolo implements Runnable{
 	public static final String ERROR = "ERROR";
 	public static final String ERROR_FORMATO = "Error en el formato. Cerrando conexion";
 
-
 	/**
 	 * Metodo que se encarga de imprimir en consola todos los errores que se 
 	 * producen durante la ejecuación del protocolo. 
@@ -108,8 +99,8 @@ public class Protocolo implements Runnable{
 		writer.println(msg);
 		if(SHOW_OUT)		System.out.println(">>SERV: " + msg);
 	}
-	
-	public static void atenderCliente(){
+
+	public static void atenderCliente(Socket s){
 		try{
 			PrintWriter writer = new PrintWriter(s.getOutputStream(), true);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -117,10 +108,11 @@ public class Protocolo implements Runnable{
 			// Recibe HOLA.
 			// En caso de error de formato, cierra la conexion.
 			// ////////////////////////////////////////////////////////////////////////
-			iSession = System.currentTimeMillis();
+
 			String linea = read(reader);
 			if (!linea.equals(HOLA)) {
 				write(writer, ERROR_FORMATO);
+
 				throw new FontFormatException(linea);
 			}
 
@@ -199,7 +191,7 @@ public class Protocolo implements Runnable{
 
 			// Transforma la llave simertrica y la envia
 			write(writer, INIT + SEPARADOR + Transformacion.codificar(ciphertext1));
-			iSession = iSession -System.currentTimeMillis();
+
 
 			// ////////////////////////////////////////////////////////////////////////
 			// Recibe la posicion del usuario.
@@ -293,16 +285,5 @@ public class Protocolo implements Runnable{
 		}
 	}
 
-	/**
-	 * Get socket.
-	 */
-	public Protocolo(Socket s1){
-		s = s1;
-	}
-	
-	@Override
-	public void run() {
-		atenderCliente();
-	}
 
 }

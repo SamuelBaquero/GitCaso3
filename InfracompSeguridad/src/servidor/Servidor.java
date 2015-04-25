@@ -11,7 +11,6 @@ import java.net.SocketException;
 import java.security.Security;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 
 
@@ -26,13 +25,8 @@ import java.util.concurrent.Semaphore;
  * @author Michael Andres Carrillo Pinzon 	-  201320.
  * @author José Miguel Suárez Lopera 		-  201510
  */
-public class Servidor implements Runnable {
+public class Servidor extends Thread {
 
-	/**
-	 * Variables para calcular indicadores
-	 */
-	private static int iLost;
-	
 	/**
 	 * Constante que especifica el tiempo máximo en milisegundos que se esperara 
 	 * por la respuesta de un cliente en cada una de las partes de la comunicación
@@ -57,12 +51,12 @@ public class Servidor implements Runnable {
 	/**
 	 * El semaforo que permite tomar turnos para atender las solicitudes.
 	 */
-	private Semaphore semaphore;
+	//	private Semaphore semaphore;
 
 	/**
 	 * El id del Thread
 	 */
-	private int id;
+	//	private int id;
 
 	/**
 	 * Pool de threads del servidor.
@@ -84,32 +78,28 @@ public class Servidor implements Runnable {
 		// Crea el socket que escucha en el puerto seleccionado.
 		socket = new ServerSocket(PUERTO);
 
-		//		// Crea un semaforo que da turnos para usar el socket.
+		// Crea un semaforo que da turnos para usar el socket.
 		//		Semaphore semaphore = new Semaphore(1);
-		//
+
 		//		// Genera n threads que correran durante la sesion.
 		//		Servidor [] threads = new Servidor[N_THREADS];
 		//		for ( int i = 0 ; i < N_THREADS ; i++) {
 		//			threads[i] = new Servidor(i, semaphore);
 		//		}
-		//Crea el pool de N_THREADS threads
 		pool = Executors.newFixedThreadPool(N_THREADS);
-
-		System.out.println("El servidor esta listo para aceptar conexiones.");
 		Socket s = null;
-		try{
-			s = socket.accept();
-			s.setSoTimeout(TIME_OUT);
-			System.out.println("Thread  recibe a un cliente.");
-		}catch(IOException ie){
-			System.out.println(ie.getMessage());
-			ie.printStackTrace();
-		}
-		try{
-			pool.execute(new Protocolo(s));
-		}catch(RejectedExecutionException ie){
-			System.out.println(ie.getMessage());
-			iLost ++;
+		System.out.println("El servidor esta listo para aceptar conexiones.");
+		while (true){
+			try {
+				//			semaphore.acquire();
+				s = socket.accept();
+				s.setSoTimeout(TIME_OUT);
+				pool.execute(new Servidor());
+			} catch (IOException e) {
+				e.printStackTrace();
+				//			semaphore.release();
+				continue;
+			}
 		}
 	}
 
@@ -124,55 +114,32 @@ public class Servidor implements Runnable {
 	 *             Si hubo un problema con el semaforo.
 	 * @throws SocketException 
 	 */
-	//	public Servidor(int id, Semaphore semaphore) throws  SocketException {
-	//		this.id = id;
-	//		this.semaphore = semaphore;
-	//		this.start();
-	//	}
+	public Servidor(){
+			//			int id, Semaphore semaphore) throws  SocketException {
+		//		this.id = id;
+		//		this.semaphore = semaphore;this.start();
+	}
 
 	/**
 	 * Metodo que atiende a los usuarios.
 	 */
 	@Override
 	public void run() {
-		while (true) {
-			Socket s = null;
-			// ////////////////////////////////////////////////////////////////////////
-			// Recibe una conexion del socket.
-			// ////////////////////////////////////////////////////////////////////////
+		//		while (true) {
+		Socket s = null;
+		// ////////////////////////////////////////////////////////////////////////
+		// Recibe una conexion del socket.
+		// ////////////////////////////////////////////////////////////////////////
 
-			//			try {
-			//				semaphore.acquire();
-			//				s = socket.accept();
-			//				s.setSoTimeout(TIME_OUT);
-			//			} catch (IOException e) {
-			//				e.printStackTrace();
-			//				semaphore.release();
-			//				continue;
-			//			} catch (InterruptedException e) {
-			//				// Si hubo algun error tomando turno en el semaforo.
-			//				// No deberia alcanzarse en condiciones normales de ejecucion.
-			//				e.printStackTrace();
-			//				continue;
-			//			}
-			//			semaphore.release();
-			System.out.println("Thread " + id + " recibe a un cliente.");
-			try{
-				s = socket.accept();
-				s.setSoTimeout(TIME_OUT);
-			}catch(IOException ie){
-				System.out.println(ie.getMessage());
-				ie.printStackTrace();
-			}
-			try{
-				pool.execute(new Protocolo(s));
-			}catch(RejectedExecutionException ie){
-				System.out.println(ie.getMessage());
-				iLost  ++;
-			}
-		}
+		//			catch (InterruptedException e) {
+		//				// Si hubo algun error tomando turno en el semaforo.
+		//				// No deberia alcanzarse en condiciones normales de ejecucion.
+		//				e.printStackTrace();
+		//				continue;
+		//			}
+		//			semaphore.release();
+		System.out.println("Thread recibe a un cliente.");
+		Protocolo.atenderCliente(s);
 	}
-
-
-
+	//	}
 }
