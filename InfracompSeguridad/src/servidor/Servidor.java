@@ -47,7 +47,12 @@ public class Servidor extends Thread {
 	 * El socket que permite recibir requerimientos por parte de clientes.
 	 */
 	private static ServerSocket socket;
-
+	
+	/**
+	 * El socket del thread.
+	 */
+	private Socket s1;
+	
 	/**
 	 * El semaforo que permite tomar turnos para atender las solicitudes.
 	 */
@@ -77,27 +82,16 @@ public class Servidor extends Thread {
 
 		// Crea el socket que escucha en el puerto seleccionado.
 		socket = new ServerSocket(PUERTO);
-
-		// Crea un semaforo que da turnos para usar el socket.
-		//		Semaphore semaphore = new Semaphore(1);
-
-		//		// Genera n threads que correran durante la sesion.
-		//		Servidor [] threads = new Servidor[N_THREADS];
-		//		for ( int i = 0 ; i < N_THREADS ; i++) {
-		//			threads[i] = new Servidor(i, semaphore);
-		//		}
 		pool = Executors.newFixedThreadPool(N_THREADS);
 		Socket s = null;
 		System.out.println("El servidor esta listo para aceptar conexiones.");
 		while (true){
 			try {
-				//			semaphore.acquire();
 				s = socket.accept();
 				s.setSoTimeout(TIME_OUT);
-				pool.execute(new Servidor());
-			} catch (IOException e) {
+				pool.execute(new Servidor(s));
+			}catch(IOException e){
 				e.printStackTrace();
-				//			semaphore.release();
 				continue;
 			}
 		}
@@ -114,10 +108,8 @@ public class Servidor extends Thread {
 	 *             Si hubo un problema con el semaforo.
 	 * @throws SocketException 
 	 */
-	public Servidor(){
-			//			int id, Semaphore semaphore) throws  SocketException {
-		//		this.id = id;
-		//		this.semaphore = semaphore;this.start();
+	public Servidor(Socket s){
+		s1 = s;
 	}
 
 	/**
@@ -125,21 +117,10 @@ public class Servidor extends Thread {
 	 */
 	@Override
 	public void run() {
-		//		while (true) {
-		Socket s = null;
 		// ////////////////////////////////////////////////////////////////////////
 		// Recibe una conexion del socket.
 		// ////////////////////////////////////////////////////////////////////////
-
-		//			catch (InterruptedException e) {
-		//				// Si hubo algun error tomando turno en el semaforo.
-		//				// No deberia alcanzarse en condiciones normales de ejecucion.
-		//				e.printStackTrace();
-		//				continue;
-		//			}
-		//			semaphore.release();
 		System.out.println("Thread recibe a un cliente.");
-		Protocolo.atenderCliente(s);
+		Protocolo.atenderCliente(s1);
 	}
-	//	}
 }
