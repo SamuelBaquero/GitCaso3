@@ -31,17 +31,17 @@ public class Servidor extends Thread {
 	 * Constante que especifica el tiempo máximo en milisegundos que se esperara 
 	 * por la respuesta de un cliente en cada una de las partes de la comunicación
 	 */
-	private static final int TIME_OUT = 10000;
+	private static final int TIME_OUT = 500;
 
 	/**
 	 * Constante que especifica el numero de threads que se usan en el pool de conexiones.
 	 */
-	public static final int N_THREADS = 6;
+	public static final int N_THREADS = 14;
 
 	/**
 	 * Puerto en el cual escucha el servidor.
 	 */
-	public static final int PUERTO = 443;
+	public static final int PUERTO = 8080;
 
 	/**
 	 * El socket que permite recibir requerimientos por parte de clientes.
@@ -52,17 +52,6 @@ public class Servidor extends Thread {
 	 * El socket del thread.
 	 */
 	private Socket s1;
-	
-	/**
-	 * El semaforo que permite tomar turnos para atender las solicitudes.
-	 */
-	//	private Semaphore semaphore;
-
-	/**
-	 * El id del Thread
-	 */
-	//	private int id;
-
 	/**
 	 * Pool de threads del servidor.
 	 */
@@ -74,7 +63,7 @@ public class Servidor extends Thread {
 	 * @param args Los argumentos del metodo main (vacios para este ejemplo).
 	 * @throws IOException Si el socket no pudo ser creado.
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException{
 
 		// Adiciona la libreria como un proveedor de seguridad.
 		// Necesario para crear llaves.
@@ -102,11 +91,6 @@ public class Servidor extends Thread {
 	 * 
 	 * @param socket
 	 *            El socket por el cual llegan las conexiones.
-	 * @param semaphore
-	 *            Un semaforo que permite dar turnos para usar el socket.
-	 * @throws InterruptedException
-	 *             Si hubo un problema con el semaforo.
-	 * @throws SocketException 
 	 */
 	public Servidor(Socket s){
 		s1 = s;
